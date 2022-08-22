@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var words [25][]string
+var words [26][]string
 
 type Grid struct {
 	grid [][]byte
@@ -145,7 +145,7 @@ func createDictionary(path string) ([]string, error) {
 
 func main() {
 
-	for i := 2; i < 25; i++ {
+	for i := 2; i < 26; i++ {
 		name := strconv.Itoa(i)
 		words[i], _ = createDictionary("./words/" + name + ".txt")
 	}
