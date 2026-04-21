@@ -1,0 +1,15 @@
+[package]
+name = "crosswords"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libc = "0.2"
+
+[[bin]]
+name = "crosswords_rust"
+path = "src/crosswords.rs"
+
+[[bin]]
+name = "crosswords_rust_clike"
+path = "src/crosswords_clike.rs"
