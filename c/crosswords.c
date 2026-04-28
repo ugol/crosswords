@@ -56,27 +56,51 @@ int contains_excluded_letter(const char *word, size_t wlen, const unsigned int e
     return 0;
 }
 
+// Returns non-zero if word contains every included letter at least once.
+int contains_all_included_letters(const char *word, size_t wlen, const unsigned int included_mask) {
+    if (included_mask == 0) {
+        return 1;
+    }
+
+    unsigned int word_mask = 0;
+    for (size_t i = 0; i < wlen; i++) {
+        unsigned char c = (unsigned char)word[i];
+        if (!isalpha(c)) {
+            continue;
+        }
+        unsigned char lower = (unsigned char)tolower(c);
+        word_mask |= 1u << (lower - 'a');
+    }
+
+    return (word_mask & included_mask) == included_mask;
+}
+
 int main(int argc, char *argv[]) {
     static struct option long_options[] = {
         {"exclude", required_argument, 0, 'e'},
+        {"include", required_argument, 0, 'i'},
         {0, 0, 0, 0},
     };
 
     const char *exclude_letters = NULL;
+    const char *include_letters = NULL;
     int opt;
-    while ((opt = getopt_long(argc, argv, "e:", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "e:i:", long_options, NULL)) != -1) {
         switch (opt) {
             case 'e':
                 exclude_letters = optarg;
                 break;
+            case 'i':
+                include_letters = optarg;
+                break;
             default:
-                fprintf(stderr, "usage: %s [--exclude letters] PATTERN\n", argv[0]);
+                fprintf(stderr, "usage: %s [--exclude letters] [--include letters] PATTERN\n", argv[0]);
                 return EXIT_FAILURE;
         }
     }
 
     if (optind != argc - 1) {
-        fprintf(stderr, "usage: %s [--exclude letters] PATTERN\n", argv[0]);
+        fprintf(stderr, "usage: %s [--exclude letters] [--include letters] PATTERN\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -97,6 +121,19 @@ int main(int argc, char *argv[]) {
             }
             c = (unsigned char)tolower(c);
             excluded_mask |= 1u << (c - 'a');
+        }
+    }
+
+    unsigned int included_mask = 0;
+    if (include_letters) {
+        for (size_t i = 0; include_letters[i] != '\0'; i++) {
+            unsigned char c = (unsigned char)include_letters[i];
+            if (!isalpha(c)) {
+                fprintf(stderr, "include letters must be alphabetic only\n");
+                return EXIT_FAILURE;
+            }
+            c = (unsigned char)tolower(c);
+            included_mask |= 1u << (c - 'a');
         }
     }
 
@@ -122,7 +159,8 @@ int main(int argc, char *argv[]) {
 
         if (wlen == plen
             && match_word(line_start, wlen, pattern, plen)
-            && !contains_excluded_letter(line_start, wlen, excluded_mask)) {
+            && !contains_excluded_letter(line_start, wlen, excluded_mask)
+            && contains_all_included_letters(line_start, wlen, included_mask)) {
             fwrite(line_start, 1, wlen, stdout);
             fputc('\n', stdout);
             match_count++;
