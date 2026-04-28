@@ -106,6 +106,9 @@ int main(int argc, char *argv[]) {
 
     char *pattern = argv[optind];
     size_t plen = strlen(pattern);
+    for(size_t i = 0; i<plen; i++){
+        pattern[i] = tolower(pattern[i]);
+    }
     if (plen < 2 || plen > MAX_LEN) {
         fprintf(stderr, "pattern length must be between 2 and %d\n", MAX_LEN);
         return EXIT_FAILURE;
